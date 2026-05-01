@@ -1,219 +1,142 @@
 # Team Task Manager
 
-A production-ready team task management web application with role-based access control, built for the Ethara.ai internship assignment.
+A task management app where teams can create projects, assign tasks, and track progress. Built with Node.js, Express, MongoDB, and vanilla JavaScript.
 
-## Features
+## What it does
 
-- **User Authentication**: JWT-based signup and login with role selection (ADMIN/MEMBER)
-- **Role-Based Access Control**: Different permissions for ADMIN and MEMBER users
-- **Project Management**: Create projects and assign team members (ADMIN only)
-- **Task Management**: Create, update, and track tasks with assignments and due dates
-- **Kanban Board**: Visual three-column task board (TODO, IN_PROGRESS, DONE)
-- **Dashboard**: Real-time statistics and overdue task tracking
-- **Notion-like UI**: Clean, minimal design with warm colors and no shadows
+- Users can sign up as Admin or Member
+- Admins create projects and add team members
+- Everyone can create tasks and update their status
+- Dashboard shows stats and overdue tasks
+- Kanban board to visualize task progress
 
-## Tech Stack
+## Tech used
 
 - **Backend**: Node.js + Express
-- **Database**: MongoDB Atlas (native driver, no ORM)
-- **Authentication**: JWT (jsonwebtoken) + bcryptjs
-- **Frontend**: Vanilla HTML, CSS, JavaScript (no frameworks)
+- **Database**: MongoDB Atlas (native driver)
+- **Auth**: JWT tokens + bcrypt
+- **Frontend**: Plain HTML/CSS/JS
 
-## Prerequisites
+## Setup
 
-- Node.js (v14 or higher)
-- MongoDB Atlas account (free M0 tier)
-- npm or yarn
-
-## Setup Instructions
-
-### 1. Clone or Download
-
-Download this project to your local machine.
-
-### 2. Install Dependencies
+### 1. Install stuff
 
 ```bash
 npm install
 ```
 
-### 3. MongoDB Atlas Setup
+### 2. MongoDB setup
 
-1. Go to [mongodb.com/cloud/atlas](https://mongodb.com/cloud/atlas) and create a free account
-2. Click "Build a Database" → choose Free M0 tier → select any region
-3. Create a database user with username and password
-4. Network Access → Add IP Address → Allow access from anywhere (0.0.0.0/0)
-5. Go to Database → Connect → Drivers → copy the connection string
-6. Replace `<password>` in the string with your actual database user password
+You need a MongoDB Atlas account (it's free):
 
-Your connection string should look like:
+1. Go to mongodb.com/cloud/atlas and sign up
+2. Create a free cluster (M0 tier)
+3. Make a database user with username and password
+4. Whitelist your IP (or use 0.0.0.0/0 for testing)
+5. Get the connection string from "Connect" → "Drivers"
+
+### 3. Environment variables
+
+Create a `.env` file:
+
 ```
-mongodb+srv://youruser:yourpassword@cluster0.abc123.mongodb.net/taskmanager?retryWrites=true&w=majority
-```
-
-### 4. Environment Variables
-
-Create a `.env` file in the root directory:
-
-```bash
-cp .env.example .env
-```
-
-Edit `.env` and add your values:
-
-```env
 MONGODB_URI=your_mongodb_connection_string_here
-JWT_SECRET=your_long_random_secret_at_least_32_characters
+JWT_SECRET=any_random_string_at_least_32_chars
 PORT=3000
 ```
 
-**Important**: Generate a strong JWT_SECRET (at least 32 random characters).
-
-### 5. Seed the Database
-
-Populate the database with test data:
+### 4. Add test data
 
 ```bash
 npm run seed
 ```
 
-This creates:
-- **ADMIN user**: admin@test.com / admin123
-- **MEMBER user**: member@test.com / member123
-- 1 demo project with 3 sample tasks
+This creates two test accounts:
+- admin@test.com / admin123 (Admin)
+- member@test.com / member123 (Member)
 
-### 6. Start the Server
+### 5. Run it
 
-Development mode (with auto-reload):
 ```bash
 npm run dev
 ```
 
-Production mode:
-```bash
-npm start
+Open http://localhost:3000
+
+## What you can do
+
+**Admin users:**
+- Create and delete projects
+- Add team members to projects
+- Create, update, and delete tasks
+- See all projects
+
+**Member users:**
+- See only their assigned projects
+- Create and update tasks
+- Can't delete anything
+
+## Project structure
+
 ```
-
-The server will start on `http://localhost:3000`
-
-### 7. Open in Browser
-
-Navigate to `http://localhost:3000` and log in with one of the test accounts.
-
-## Project Structure
-
-```
-task-manager/
 ├── src/
-│   ├── index.js              # Express entry point
+│   ├── index.js              # Server setup
 │   ├── db.js                 # MongoDB connection
-│   ├── middleware/
-│   │   └── auth.js           # JWT authentication middleware
-│   └── routes/
-│       ├── auth.js           # Signup and login routes
-│       ├── projects.js       # Project CRUD routes
-│       └── tasks.js          # Task CRUD and dashboard routes
+│   ├── middleware/auth.js    # JWT verification
+│   └── routes/               # API endpoints
 ├── public/
-│   ├── index.html            # Login/Signup page
-│   ├── dashboard.html        # Dashboard with stats and projects
-│   ├── project.html          # Kanban board view
-│   ├── css/
-│   │   └── style.css         # Global styles (Notion-like design)
-│   └── js/
-│       ├── auth.js           # Login/signup logic
-│       ├── dashboard.js      # Dashboard logic
-│       └── project.js        # Kanban board logic
-├── seed.js                   # Database seed script
-├── .env.example              # Environment variables template
-├── .gitignore
-├── package.json
-└── README.md
+│   ├── index.html            # Login page
+│   ├── dashboard.html        # Main dashboard
+│   ├── project.html          # Kanban board
+│   ├── css/style.css         # Styles
+│   └── js/                   # Frontend logic
+└── seed.js                   # Database seeding
 ```
 
-## API Endpoints
+## API endpoints
 
-### Authentication
-- `POST /api/auth/signup` - Register new user
-- `POST /api/auth/login` - Login and receive JWT token
-
-### Projects
-- `GET /api/projects` - List projects (filtered by role)
-- `POST /api/projects` - Create project (ADMIN only)
-- `GET /api/projects/:id` - Get project with tasks and members
-- `DELETE /api/projects/:id` - Delete project (ADMIN only)
-
-### Tasks
-- `POST /api/tasks` - Create new task
-- `PATCH /api/tasks/:id/status` - Update task status
-- `DELETE /api/tasks/:id` - Delete task (ADMIN only)
-- `GET /api/tasks/overdue` - Get overdue tasks
-- `GET /api/tasks/dashboard` - Get dashboard statistics
-
-## Role-Based Permissions
-
-| Action | ADMIN | MEMBER |
-|--------|-------|--------|
-| View projects | All projects | Own projects only |
-| Create project | ✅ | ❌ |
-| Delete project | ✅ | ❌ |
-| Create task | ✅ | ✅ |
-| Update task status | ✅ | ✅ |
-| Delete task | ✅ | ❌ |
+```
+POST   /api/auth/signup       - Create account
+POST   /api/auth/login        - Login
+GET    /api/projects          - List projects
+POST   /api/projects          - Create project (admin)
+GET    /api/projects/:id      - Get project details
+DELETE /api/projects/:id      - Delete project (admin)
+POST   /api/tasks             - Create task
+PATCH  /api/tasks/:id/status  - Update task status
+DELETE /api/tasks/:id         - Delete task (admin)
+GET    /api/tasks/overdue     - Get overdue tasks
+GET    /api/tasks/dashboard   - Get stats
+```
 
 ## Deployment
 
-### Railway Deployment
+Works on Railway, Render, or any Node.js host:
 
-1. Push code to GitHub
-2. Go to [railway.app](https://railway.app) → New Project → Deploy from GitHub
-3. Select your repository
-4. Add environment variables in the Variables tab:
-   - `MONGODB_URI`
-   - `JWT_SECRET`
-   - `PORT` (optional, Railway sets this automatically)
-5. Deploy and get your public URL
+1. Push to GitHub
+2. Connect your repo to the hosting platform
+3. Add environment variables (MONGODB_URI, JWT_SECRET)
+4. Deploy
 
-## Testing Checklist
+## Common issues
 
-- [ ] Signup as ADMIN and MEMBER
-- [ ] Login with correct and incorrect credentials
-- [ ] ADMIN can create projects
-- [ ] MEMBER cannot create projects (403 error)
-- [ ] MEMBER only sees their assigned projects
-- [ ] Create tasks with due dates
-- [ ] Update task status via dropdown
-- [ ] Dashboard shows correct statistics
-- [ ] Overdue tasks appear correctly
-- [ ] ADMIN can delete tasks
-- [ ] MEMBER cannot see delete buttons
-- [ ] Logout clears session
+**Port already in use?**
+- Kill the process using port 3000 or change PORT in .env
 
-## Design System
-
-The UI follows a Notion-like aesthetic:
-
-- **Colors**: Warm off-white background (#F7F6F3), no pure white
-- **Typography**: System fonts only (system-ui, -apple-system)
-- **No shadows**: Clean, flat design
-- **No gradients**: Solid colors only
-- **Borders**: Warm gray (#E8E6E1)
-- **Accent**: Muted amber (#D97706)
-
-## Troubleshooting
-
-**MongoDB connection fails:**
-- Check your connection string in `.env`
-- Ensure your IP is whitelisted in MongoDB Atlas (use 0.0.0.0/0 for testing)
+**Can't connect to MongoDB?**
+- Check your connection string
+- Make sure your IP is whitelisted in Atlas
 - Verify database user credentials
 
-**401 Unauthorized errors:**
-- Check if JWT_SECRET is set in `.env`
-- Try logging out and logging in again
+**Authentication fails?**
+- Make sure JWT_SECRET is set in .env
+- Try logging out and back in
 
-**Tasks not appearing:**
-- Run `npm run seed` to populate test data
-- Check browser console for errors
+## Notes
 
-## License
+- Passwords are hashed with bcrypt
+- JWT tokens expire after 7 days
+- The UI is intentionally simple (Notion-inspired)
+- No frameworks used on frontend
 
-This project is created for educational purposes as part of the Ethara.ai internship assignment.
+Built for Ethara.ai internship assignment.

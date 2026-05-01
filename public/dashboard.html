@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Task Manager</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-content">
+      <div class="nav-brand">Task Manager</div>
+      <div class="nav-right">
+        <span class="user-info">
+          <span id="userName"></span>
+          <span class="badge" id="userRole"></span>
+        </span>
+        <button class="btn-text" id="logoutBtn">Logout</button>
+      </div>
+    </div>
+  </nav>
+  
+  <div class="container">
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total Tasks</div>
+        <div class="stat-value" id="statTotal">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">To Do</div>
+        <div class="stat-value" id="statTodo">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">In Progress</div>
+        <div class="stat-value" id="statInProgress">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Done</div>
+        <div class="stat-value" id="statDone">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Overdue</div>
+        <div class="stat-value stat-danger" id="statOverdue">0</div>
+      </div>
+    </div>
+    
+    <!-- Projects Section -->
+    <div class="section-header">
+      <h2>Projects</h2>
+      <button class="btn-primary" id="newProjectBtn" style="display: none;">+ New Project</button>
+    </div>
+    
+    <div class="projects-grid" id="projectsGrid">
+      <!-- Projects will be loaded here -->
+    </div>
+    
+    <!-- Overdue Tasks Section -->
+    <div class="section-header">
+      <h2>Overdue Tasks</h2>
+    </div>
+    
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Task</th>
+            <th>Project</th>
+            <th>Assigned To</th>
+            <th>Due Date</th>
+          </tr>
+        </thead>
+        <tbody id="overdueTableBody">
+          <!-- Overdue tasks will be loaded here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  <!-- New Project Modal -->
+  <div class="modal" id="newProjectModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>New Project</h3>
+        <button class="modal-close" id="closeProjectModal">&times;</button>
+      </div>
+      <form id="newProjectForm">
+        <div class="form-group">
+          <label for="projectName">Project Name</label>
+          <input type="text" id="projectName" name="name" placeholder="Enter project name" required>
+        </div>
+        
+        <div class="form-group">
+          <label>Team Members</label>
+          <div id="memberCheckboxes" class="checkbox-group">
+            <!-- Member checkboxes will be loaded here -->
+          </div>
+        </div>
+        
+        <div class="error-message" id="projectError"></div>
+        
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" id="cancelProjectBtn">Cancel</button>
+          <button type="submit" class="btn-primary">Create Project</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

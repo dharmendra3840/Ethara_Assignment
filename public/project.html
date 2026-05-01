@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project - Task Manager</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-content">
+      <div class="nav-brand">Task Manager</div>
+      <div class="nav-right">
+        <span class="user-info">
+          <span id="userName"></span>
+          <span class="badge" id="userRole"></span>
+        </span>
+        <button class="btn-text" id="logoutBtn">Logout</button>
+      </div>
+    </div>
+  </nav>
+  
+  <div class="container">
+    <!-- Project Header -->
+    <div class="project-header">
+      <div>
+        <a href="dashboard.html" class="back-link">← Projects</a>
+        <h1 id="projectName">Loading...</h1>
+      </div>
+      <button class="btn-primary" id="addTaskBtn">+ Add Task</button>
+    </div>
+    
+    <!-- Kanban Board -->
+    <div class="kanban-board">
+      <!-- TODO Column -->
+      <div class="kanban-column">
+        <div class="kanban-header">
+          <h3>To Do</h3>
+          <span class="task-count" id="todoCount">0</span>
+        </div>
+        <div class="kanban-tasks" id="todoTasks">
+          <!-- Tasks will be loaded here -->
+        </div>
+      </div>
+      
+      <!-- IN_PROGRESS Column -->
+      <div class="kanban-column">
+        <div class="kanban-header">
+          <h3>In Progress</h3>
+          <span class="task-count" id="inProgressCount">0</span>
+        </div>
+        <div class="kanban-tasks" id="inProgressTasks">
+          <!-- Tasks will be loaded here -->
+        </div>
+      </div>
+      
+      <!-- DONE Column -->
+      <div class="kanban-column">
+        <div class="kanban-header">
+          <h3>Done</h3>
+          <span class="task-count" id="doneCount">0</span>
+        </div>
+        <div class="kanban-tasks" id="doneTasks">
+          <!-- Tasks will be loaded here -->
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Add Task Modal -->
+  <div class="modal" id="addTaskModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Add Task</h3>
+        <button class="modal-close" id="closeTaskModal">&times;</button>
+      </div>
+      <form id="addTaskForm">
+        <div class="form-group">
+          <label for="taskTitle">Title</label>
+          <input type="text" id="taskTitle" name="title" placeholder="Task title" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="taskDescription">Description</label>
+          <textarea id="taskDescription" name="description" placeholder="Task description" rows="3"></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label for="taskAssignee">Assign To</label>
+          <select id="taskAssignee" name="assignedToId">
+            <option value="">Unassigned</option>
+            <!-- Members will be loaded here -->
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="taskDueDate">Due Date</label>
+          <input type="date" id="taskDueDate" name="dueDate">
+        </div>
+        
+        <div class="error-message" id="taskError"></div>
+        
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" id="cancelTaskBtn">Cancel</button>
+          <button type="submit" class="btn-primary">Create Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <script src="js/project.js"></script>
+</body>
+</html>

@@ -60,7 +60,7 @@
     <div class="section-header">
       <h2>Overdue Tasks</h2>
     </div>
-    
+
     <div class="table-container">
       <table class="data-table">
         <thead>
@@ -75,6 +75,30 @@
           <!-- Overdue tasks will be loaded here -->
         </tbody>
       </table>
+    </div>
+
+    <!-- Team Workload Section (ADMIN only) -->
+    <div id="workloadSection" style="display:none">
+      <div class="section-header" style="margin-top:32px">
+        <h2>Team Workload</h2>
+      </div>
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>To Do</th>
+              <th>In Progress</th>
+              <th>Done</th>
+              <th>Overdue</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody id="workloadTableBody">
+            <!-- Workload data will be loaded here -->
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
   

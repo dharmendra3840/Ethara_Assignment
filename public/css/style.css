@@ -570,6 +570,23 @@ h3 {
   border-color: #A8A8A0;
 }
 
+/* Workload Panel */
+.workload-member {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.workload-overdue {
+  color: #DC2626;
+  font-weight: 500;
+}
+
+.workload-total {
+  color: #1A1A1A;
+  font-weight: 600;
+}
+
 /* Activity Log */
 .task-activity {
   margin-top: 10px;

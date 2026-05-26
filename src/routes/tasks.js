@@ -223,6 +223,59 @@ router.get('/dashboard', auth, async (req, res) => {
 });
 
 /**
+ * GET /api/tasks/workload
+ * Per-member task count breakdown — ADMIN only
+ */
+router.get('/workload', auth, auth.isAdmin, async (req, res) => {
+  try {
+    const db = getDb();
+    const now = new Date();
+
+    const tasks = await db.collection('tasks').find({}).toArray();
+
+    const workloadMap = new Map();
+
+    for (const task of tasks) {
+      const key = task.assignedToId ? task.assignedToId.toString() : 'unassigned';
+      if (!workloadMap.has(key)) {
+        workloadMap.set(key, { userId: key, todo: 0, inProgress: 0, done: 0, overdue: 0 });
+      }
+      const entry = workloadMap.get(key);
+      if (task.status === 'TODO') entry.todo++;
+      else if (task.status === 'IN_PROGRESS') entry.inProgress++;
+      else if (task.status === 'DONE') entry.done++;
+      if (task.dueDate && task.dueDate < now && task.status !== 'DONE') entry.overdue++;
+    }
+
+    const userIds = [...workloadMap.keys()]
+      .filter(k => k !== 'unassigned')
+      .map(k => new ObjectId(k));
+
+    const users = await db.collection('users')
+      .find({ _id: { $in: userIds } })
+      .project({ name: 1, role: 1 })
+      .toArray();
+
+    const usersById = new Map(users.map(u => [u._id.toString(), u]));
+
+    const result = [...workloadMap.entries()]
+      .map(([key, counts]) => ({
+        userId: key,
+        name: key === 'unassigned' ? 'Unassigned' : (usersById.get(key)?.name || 'Unknown'),
+        role: key === 'unassigned' ? null : (usersById.get(key)?.role || null),
+        ...counts,
+        total: counts.todo + counts.inProgress + counts.done
+      }))
+      .sort((a, b) => b.total - a.total);
+
+    res.json(result);
+  } catch (err) {
+    console.error('Workload error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+/**
  * GET /api/tasks/:id/logs
  * Get activity log for a task
  */

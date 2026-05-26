@@ -222,6 +222,41 @@ newProjectForm.addEventListener('submit', async (e) => {
   }
 });
 
+// Fetch and display team workload (ADMIN only)
+async function loadWorkload() {
+  try {
+    const res = await fetch('/api/tasks/workload', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    if (!res.ok) return;
+
+    const workload = await res.json();
+    const tbody = document.getElementById('workloadTableBody');
+
+    if (workload.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No task data yet</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = workload.map(member => `
+      <tr>
+        <td class="workload-member">
+          ${escapeHtml(member.name)}
+          ${member.role ? `<span class="badge badge-${member.role.toLowerCase()}">${member.role}</span>` : ''}
+        </td>
+        <td>${member.todo}</td>
+        <td>${member.inProgress}</td>
+        <td>${member.done}</td>
+        <td class="${member.overdue > 0 ? 'workload-overdue' : ''}">${member.overdue}</td>
+        <td class="workload-total">${member.total}</td>
+      </tr>
+    `).join('');
+  } catch (err) {
+    console.error('Failed to load workload:', err);
+  }
+}
+
 // Utility functions
 function escapeHtml(text) {
   const div = document.createElement('div');
@@ -239,3 +274,7 @@ function formatDate(dateString) {
 loadDashboardStats();
 loadProjects();
 loadOverdueTasks();
+if (user.role === 'ADMIN') {
+  document.getElementById('workloadSection').style.display = 'block';
+  loadWorkload();
+}

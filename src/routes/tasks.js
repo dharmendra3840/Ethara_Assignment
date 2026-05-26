@@ -7,6 +7,19 @@ const { getDb } = require('../db');
 const auth = require('../middleware/auth');
 const router = express.Router();
 
+async function logActivity(db, { taskId, projectId, actorId, actorName, action, from, to }) {
+  await db.collection('taskLogs').insertOne({
+    taskId,
+    projectId,
+    actorId,
+    actorName,
+    action,
+    from: from || null,
+    to: to || null,
+    createdAt: new Date()
+  });
+}
+
 /**
  * POST /api/tasks
  * Create a new task
@@ -33,7 +46,21 @@ router.post('/', auth, async (req, res) => {
     
     const result = await db.collection('tasks').insertOne(task);
     const createdTask = await db.collection('tasks').findOne({ _id: result.insertedId });
-    
+
+    const actor = await db.collection('users').findOne(
+      { _id: new ObjectId(req.user.id) },
+      { projection: { name: 1 } }
+    );
+    await logActivity(db, {
+      taskId: result.insertedId,
+      projectId: new ObjectId(projectId),
+      actorId: new ObjectId(req.user.id),
+      actorName: actor?.name || 'Unknown',
+      action: 'created',
+      from: null,
+      to: task.title
+    });
+
     res.status(201).json(createdTask);
   } catch (err) {
     console.error('Create task error:', err);
@@ -55,18 +82,28 @@ router.patch('/:id/status', auth, async (req, res) => {
   try {
     const db = getDb();
     const taskId = new ObjectId(req.params.id);
-    
-    const result = await db.collection('tasks').updateOne(
-      { _id: taskId },
-      { $set: { status } }
+
+    const existingTask = await db.collection('tasks').findOne({ _id: taskId });
+    if (!existingTask) return res.status(404).json({ error: 'Task not found' });
+
+    const oldStatus = existingTask.status;
+    await db.collection('tasks').updateOne({ _id: taskId }, { $set: { status } });
+
+    const actor = await db.collection('users').findOne(
+      { _id: new ObjectId(req.user.id) },
+      { projection: { name: 1 } }
     );
-    
-    if (result.matchedCount === 0) {
-      return res.status(404).json({ error: 'Task not found' });
-    }
-    
-    const task = await db.collection('tasks').findOne({ _id: taskId });
-    res.json(task);
+    await logActivity(db, {
+      taskId,
+      projectId: existingTask.projectId,
+      actorId: new ObjectId(req.user.id),
+      actorName: actor?.name || 'Unknown',
+      action: 'status_changed',
+      from: oldStatus,
+      to: status
+    });
+
+    res.json({ ...existingTask, status });
   } catch (err) {
     console.error('Update task status error:', err);
     res.status(500).json({ error: 'Server error' });
@@ -181,6 +218,27 @@ router.get('/dashboard', auth, async (req, res) => {
     res.json({ total, todo, inProgress, done, overdue });
   } catch (err) {
     console.error('Get dashboard stats error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+/**
+ * GET /api/tasks/:id/logs
+ * Get activity log for a task
+ */
+router.get('/:id/logs', auth, async (req, res) => {
+  try {
+    const db = getDb();
+    const taskId = new ObjectId(req.params.id);
+    const logs = await db.collection('taskLogs')
+      .find({ taskId })
+      .sort({ createdAt: 1 })
+      .toArray();
+    res.json(logs);
+  } catch (err) {
+    if (err.message?.includes('24 hex')) {
+      return res.status(400).json({ error: 'Invalid ID' });
+    }
     res.status(500).json({ error: 'Server error' });
   }
 });

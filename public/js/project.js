@@ -86,9 +86,9 @@ function renderTasks(tasks) {
 function renderTaskCard(task) {
   const assignee = currentProject.members.find(m => m._id.toString() === task.assignedToId?.toString());
   const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 'DONE';
-  
+
   return `
-    <div class="task-card">
+    <div class="task-card" id="card-${task._id}">
       <div class="task-card-title">${escapeHtml(task.title)}</div>
       ${task.description ? `<div class="task-card-description">${escapeHtml(task.description)}</div>` : ''}
       <div class="task-card-meta">
@@ -104,8 +104,79 @@ function renderTaskCard(task) {
         </select>
         ${user.role === 'ADMIN' ? `<button class="btn-danger" onclick="deleteTask('${task._id}')">Delete</button>` : ''}
       </div>
+      <div class="task-activity">
+        <button class="btn-activity" onclick="toggleActivity('${task._id}', this)">Activity ▾</button>
+        <div class="activity-log" id="activity-${task._id}" style="display:none"></div>
+      </div>
     </div>
   `;
+}
+
+async function toggleActivity(taskId, btn) {
+  const logEl = document.getElementById(`activity-${taskId}`);
+  if (logEl.style.display === 'none') {
+    logEl.style.display = 'block';
+    btn.textContent = 'Activity ▴';
+    if (!logEl.dataset.loaded) {
+      await loadActivityLog(taskId, logEl);
+    }
+  } else {
+    logEl.style.display = 'none';
+    btn.textContent = 'Activity ▾';
+  }
+}
+
+async function loadActivityLog(taskId, logEl) {
+  logEl.innerHTML = '<div class="activity-loading">Loading...</div>';
+  try {
+    const res = await fetch(`/api/tasks/${taskId}/logs`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) {
+      logEl.innerHTML = '<div class="activity-empty">Could not load activity.</div>';
+      return;
+    }
+    const logs = await res.json();
+    logEl.dataset.loaded = '1';
+    if (logs.length === 0) {
+      logEl.innerHTML = '<div class="activity-empty">No activity yet.</div>';
+      return;
+    }
+    logEl.innerHTML = logs.map(log => {
+      const time = formatRelativeTime(log.createdAt);
+      let text = '';
+      if (log.action === 'created') {
+        text = `<strong>${escapeHtml(log.actorName)}</strong> created this task`;
+      } else if (log.action === 'status_changed') {
+        text = `<strong>${escapeHtml(log.actorName)}</strong> changed status · ${formatStatus(log.from)} → ${formatStatus(log.to)}`;
+      }
+      return `
+        <div class="activity-entry">
+          <span class="activity-text">${text}</span>
+          <span class="activity-time">${time}</span>
+        </div>
+      `;
+    }).join('');
+  } catch (err) {
+    logEl.innerHTML = '<div class="activity-empty">Could not load activity.</div>';
+  }
+}
+
+function formatStatus(status) {
+  const map = { TODO: 'To do', IN_PROGRESS: 'In progress', DONE: 'Done' };
+  return map[status] || status;
+}
+
+function formatRelativeTime(dateString) {
+  const date = new Date(dateString);
+  const diff = Date.now() - date;
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+  if (minutes < 1) return 'just now';
+  if (minutes < 60) return `${minutes}m ago`;
+  if (hours < 24) return `${hours}h ago`;
+  return `${days}d ago`;
 }
 
 // Update task status
